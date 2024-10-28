@@ -1,0 +1,63 @@
+import requests
+import datetime
+import pandas as pd
+import numpy as np
+import psycopg2
+from sqlalchemy import create_engine
+
+# Database setup (PostgreSQL)
+DATABASE_URL = "postgresql://username:password@localhost:5432/sportsmanship_db"
+engine = create_engine(DATABASE_URL)
+
+# Step 1: Data Collection (Mocked)
+def get_betting_data(game_id):
+    """
+    Fetches betting line data for a given NBA game.
+    Here, we mock data for demonstration purposes.
+    """
+    # In reality, you'd fetch from an API like OddsAPI or Sportradar
+    data = {
+        "game_id": game_id,
+        "team_1": "Team A",
+        "team_2": "Team B",
+        "line": np.random.uniform(1.5, 10),  # Mocked betting line
+        "timestamp": datetime.datetime.now()
+    }
+    return data
+
+# Step 2: Anomaly Detection
+def detect_anomaly(betting_data):
+    """
+    Detects anomalies in betting lines using a simple threshold.
+    For better results, replace with statistical models using real-time numbers.
+    """
+    threshold = 8.0  # Simple threshold for demonstration
+    if betting_data["line"] > threshold:
+        return True
+    return False
+
+# Step 3: Logging Anomalies
+def log_anomaly(betting_data):
+    """
+    Logs detected anomalies to the PostgreSQL database.
+    """
+    betting_data_df = pd.DataFrame([betting_data])
+    betting_data_df.to_sql('anomalies_log', engine, if_exists='append', index=False)
+    print("Anomaly logged:", betting_data)
+
+# Main Execution Function
+def monitor_games(game_ids):
+    """
+    Main function to monitor betting lines for a list of game IDs. Each NBA game will have a game ID.
+    """
+    for game_id in game_ids:
+        betting_data = get_betting_data(game_id)
+        if detect_anomaly(betting_data):
+            log_anomaly(betting_data)
+        else:
+            print(f"No anomaly detected for game {game_id}")
+
+# Run the program
+if __name__ == "__main__":
+    game_ids = [1, 2, 3, 4, 5]  # Mocked game IDs
+    monitor_games(game_ids)
